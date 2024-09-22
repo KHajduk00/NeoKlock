@@ -44,7 +44,7 @@ Replace `"your_openweathermap_api_key_here"` with your actual OpenWeatherMap API
 Run the script using Python:
 
 ```
-python weather_logger.py
+python app.py
 ```
 
 The application will start displaying the current time and updating weather and air quality information every minute. Data is logged to a CSV file (named after your city) every hour.
