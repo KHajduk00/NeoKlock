@@ -1,0 +1,13 @@
+# Ignore config files containing sensitive data
+config.json
+
+# Ignore Python cache directories
+__pycache__/
+*.pyc
+
+# Ignore CSV logs (optional if you don't want to track logs)
+*.csv
+
+# Ignore environment files (e.g., virtualenvs)
+.env/
+venv/
