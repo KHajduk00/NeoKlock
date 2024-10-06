@@ -56,3 +56,4 @@ def generate_time_display(current_time):
             rows[1] += DIGIT_MAP[char][1] + " "
             rows[2] += DIGIT_MAP[char][2] + " "
     return rows
+#Test/Test
