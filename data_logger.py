@@ -1,37 +1,44 @@
-import csv
 from datetime import datetime
-import os
 
-def log_data_to_csv(city, weather_data, air_quality_index, components):
-    filename = f"{city}.csv"
-    now = datetime.now()
-    time_str = now.strftime("%Y-%m-%d %H:%M:%S")
+AQI_INDEX_MAP = {
+    '1': "(Good)",
+    '2': "(Fair)",
+    '3': "(Moderate)",
+    '4': "(Poor)",
+    '5': "(Very Poor)"
+}
 
-    data = {
-        'Time': time_str,
-        'Temperature': weather_data['temperature'],
-        'Feels Like': weather_data['feels_like'],
-        'Humidity': weather_data['humidity'],
-        'Pressure': weather_data['pressure'],
-        'Visibility': weather_data['visibility'],
-        'Wind Speed': weather_data['wind_speed'],
-        'Clouds': weather_data['clouds'],
-        'Rain': weather_data['rain'],
-        'AQI': air_quality_index,
-        'CO': components['co'],
-        'NO': components['no'],
-        'NO2': components['no2'],
-        'O3': components['o3'],
-        'SO2': components['so2'],
-        'PM2.5': components['pm2_5'],
-        'PM10': components['pm10'],
-        'NH3': components['nh3']
-    }
+def format_weather_data(weather_data, city):
+    """Format weather data for display."""
+    if weather_data is None:
+        return ["Could not retrieve weather data."]
 
-    file_exists = os.path.isfile(filename)
+    lines = [
+        f"\nCurrent temperature in {city}: {weather_data['temperature']}°C (Feels like: {weather_data['feels_like']}°C)",
+        f"Humidity: {weather_data['humidity']}%",
+        f"Pressure: {weather_data['pressure']} hPa",
+        f"Visibility: {weather_data['visibility']} meters",
+        f"Wind speed: {weather_data['wind_speed']} m/s",
+        f"Clouds: {weather_data['clouds']}%",
+        f"Rain (last 1 hour): {weather_data['rain']} mm"
+    ]
+    return lines
 
-    with open(filename, mode='a', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=data.keys())
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow(data)
+def format_air_quality_data(aqi_index, components):
+    """Format air quality data for display."""
+    if aqi_index is None or components is None:
+        return ["Could not retrieve air quality data."]
+
+    aqi_description = AQI_INDEX_MAP.get(str(aqi_index), "(Unknown)")
+    lines = [
+        f"\nAir Quality Index (AQI): {aqi_index} {aqi_description}",
+        f"CO: {components['co']} μg/m³",
+        f"NO: {components['no']} μg/m³",
+        f"NO2: {components['no2']} μg/m³",
+        f"O3: {components['o3']} μg/m³",
+        f"SO2: {components['so2']} μg/m³",
+        f"PM2.5: {components['pm2_5']} μg/m³",
+        f"PM10: {components['pm10']} μg/m³",
+        f"NH3: {components['nh3']} μg/m³"
+    ]
+    return lines

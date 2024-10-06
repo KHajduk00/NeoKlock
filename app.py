@@ -1,40 +1,88 @@
-import time
-from utilities import clear_screen, Colors
-from weather import get_weather_data, get_air_quality
-from ascii_art import display_time
-from data_logger import log_data_to_csv
-import json
+#!/usr/bin/env python3
+"""
+Weather Station Application
+--------------------------
+Main entry point for the weather station application.
+Handles initialization and running of the weather monitoring system.
+"""
 
-# Load the configuration file
-with open('config.json') as config_file:
-    config = json.load(config_file)
+import sys
+import logging
+from pathlib import Path
+from weather import WeatherStation
+from utilities import load_config
 
-CITY = config['CITY']
+def setup_logging():
+    """Configure logging for the application."""
+    # Create logs directory if it doesn't exist
+    log_dir = Path('logs')
+    log_dir.mkdir(exist_ok=True)
 
-def display_time_and_weather():
-    last_logged_time = time.time() - 3600  # Start with an hour ago to ensure initial logging
+    # Create log file path
+    log_file = log_dir / 'weather_station.log'
 
-    while True:
-        clear_screen()
+    try:
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler(log_file, mode='a', encoding='utf-8')
+            ]
+        )
+        logger = logging.getLogger('WeatherStation')
+        # Add a test log entry to verify logging is working
+        logger.info("Logging system initialized")
+        return logger
+    except Exception as e:
+        print(f"Error setting up logging: {str(e)}")
+        sys.exit(1)
 
-        # Display current time in 7-segment format
-        current_time = time.strftime("%H:%M")
-        display_time(current_time)
+def check_configuration():
+    """Verify that all necessary configuration files and dependencies exist."""
+    config_path = Path('config.json')
+    if not config_path.exists():
+        raise FileNotFoundError(
+            "Configuration file 'config.json' not found. "
+            "Please ensure it exists and contains valid API_KEY and CITY values."
+        )
 
-        # Fetch and log weather data every hour
-        current_time_epoch = time.time()
-        if current_time_epoch - last_logged_time >= 3600:
-            last_logged_time = current_time_epoch
-            weather_data = get_weather_data(CITY)
-            if weather_data:
-                lat = weather_data['lat']
-                lon = weather_data['lon']
-                air_quality_index, components = get_air_quality(lat, lon)
+    try:
+        config = load_config()
+        required_keys = ['API_KEY', 'CITY']
+        for key in required_keys:
+            if key not in config:
+                raise KeyError(f"Missing required configuration key: {key}")
+    except Exception as e:
+        raise Exception(f"Error loading configuration: {str(e)}")
 
-                if air_quality_index is not None and components is not None:
-                    log_data_to_csv(CITY, weather_data, air_quality_index, components)
+def main():
+    """Main entry point of the application."""
+    try:
+        # Setup logging first
+        logger = setup_logging()
+        logger.info("Starting Weather Station application...")
 
-        time.sleep(60)  # Refresh every 60 seconds
+        # Verify configuration
+        check_configuration()
+        logger.info("Configuration verified successfully")
 
-# Run the clock with weather and air quality display
-display_time_and_weather()
+        # Initialize and run weather station
+        weather_station = WeatherStation()
+        logger.info("Weather Station initialized successfully")
+
+        # Start the weather dashboard
+        weather_station.display_weather_dashboard()
+
+    except KeyboardInterrupt:
+        if 'logger' in locals():
+            logger.info("Application terminated by user")
+        print("\nApplication terminated by user")
+        sys.exit(0)
+    except Exception as e:
+        if 'logger' in locals():
+            logger.error(f"An error occurred: {str(e)}")
+        print(f"Error: {str(e)}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
