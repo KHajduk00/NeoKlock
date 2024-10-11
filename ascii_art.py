@@ -3,6 +3,9 @@ class Colors:
     GREEN = '\033[92m'
     RESET = '\033[0m'
     BOLD = '\033[1m'
+    RED = '\033[31m'
+    BLUE = '\033[34m'
+    YELLOW = '\033[33m'
 
 # Mapping for weather icons
 WEATHER_ICONS = {
